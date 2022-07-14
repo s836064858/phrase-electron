@@ -72,7 +72,6 @@ export default {
      * @return {*}
      */
     minimize(type) {
-      console.log(type)
       this.isSmallSize = type === 'min'
       ipcRenderer.send('change-window-size', {
         width: type === 'min' ? 500 : 800,
@@ -84,7 +83,6 @@ export default {
      * @return {*}
      */
     closeWindow() {
-      console.log(123)
       ipcRenderer.send('close')
     }
   }
