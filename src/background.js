@@ -81,5 +81,6 @@ if (isDevelopment) {
 ipcMain.on('window-top', windowTop)
 ipcMain.on('change-window-size', changeWindowSize)
 ipcMain.on('close', () => {
-  win.close()
+  win = null
+  app.exit()
 })

@@ -34,7 +34,7 @@ import { ipcRenderer } from 'electron'
 export default {
   data() {
     return {
-      isWindows: true,
+      isWindows: false,
       isMac: false,
       isSmallSize: false,
       title: '常用短语'
@@ -46,7 +46,7 @@ export default {
       if (size[0] <= 600 && size[1] <= 450) this.isSmallSize = true
       else this.isSmallSize = false
     })
-    // this.getOS()
+    this.getOS()
   },
   methods: {
     /**
@@ -72,6 +72,7 @@ export default {
      * @return {*}
      */
     minimize(type) {
+      console.log(type)
       this.isSmallSize = type === 'min'
       ipcRenderer.send('change-window-size', {
         width: type === 'min' ? 500 : 800,
@@ -83,6 +84,7 @@ export default {
      * @return {*}
      */
     closeWindow() {
+      console.log(123)
       ipcRenderer.send('close')
     }
   }
@@ -164,6 +166,9 @@ export default {
       background-repeat: no-repeat;
     }
   }
+}
+.icon-button {
+  -webkit-app-region: no-drag;
 }
 .close {
   background: url('../assets/close.png');
