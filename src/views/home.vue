@@ -122,6 +122,7 @@ export default {
       else this.isSmallSize = false
     })
     await this.getTypeList()
+    this.queryData.type = res[0].id
     await this.getTableData()
   },
   methods: {
@@ -135,7 +136,6 @@ export default {
         params: this.queryData
       })
       this.typeList = res
-      this.queryData.type = res[0].id
     },
     changeType(id) {
       this.queryData.type = id
