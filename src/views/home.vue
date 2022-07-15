@@ -122,7 +122,7 @@ export default {
       else this.isSmallSize = false
     })
     await this.getTypeList()
-    this.queryData.type = res[0].id
+    this.queryData.type = this.typeList[0].id
     await this.getTableData()
   },
   methods: {
