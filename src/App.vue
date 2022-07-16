@@ -31,6 +31,7 @@ export default {
 }
 ::-webkit-scrollbar {
   width: 10px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
   border-radius: 8px;
