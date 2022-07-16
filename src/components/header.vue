@@ -5,9 +5,6 @@
         <div class="icon-button">
           <div class="icon-button-image close" @click="closeWindow"></div>
         </div>
-        <div class="icon-button" style="background: #f3c948" @click="alwaysTop">
-          <div class="icon-button-image top"></div>
-        </div>
         <div class="icon-button" style="background: #6cd052" v-if="!isSmallSize">
           <div class="icon-button-image small-size" @click="minimize('min')"></div>
         </div>
@@ -23,7 +20,6 @@
         <div class="icon-button minimize" @click="hideWindow"></div>
         <div class="icon-button small-size" v-if="!isSmallSize" @click="minimize('min')"></div>
         <div class="icon-button big-size" v-else @click="minimize('max')"></div>
-        <div class="icon-button top" @click="alwaysTop"></div>
         <div class="icon-button close" @click="closeWindow" style="background-size: 20px 20px"></div>
       </div>
     </div>
@@ -59,13 +55,6 @@ export default {
       var isMac = /macintosh|mac os x/i.test(navigator.userAgent)
       if (agent.includes('win') || agent.includes('wow')) this.isWindows = true
       if (isMac) this.isMac = true
-    },
-    /**
-     * @description: 置顶与取消置顶
-     * @return {*}
-     */
-    alwaysTop() {
-      ipcRenderer.send('window-top')
     },
     /**
      * @description: 最小最大化
@@ -182,9 +171,6 @@ export default {
 }
 .close {
   background: url('../assets/close.png');
-}
-.top {
-  background-image: url('../assets/zhiding.png');
 }
 .minimize {
   background-image: url('../assets/minimize.png');

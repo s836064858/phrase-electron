@@ -3,17 +3,52 @@
 import { app, protocol, BrowserWindow, Menu, ipcMain, Tray } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
-import { windowTop } from './main/windowTop'
 import { changeWindowSize } from './main/changeWindowSize'
 const path = require('path')
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
 let win, tray
+//获取icon地址
+const iconUrl = isDevelopment ? path.join(__dirname, '/bundled/icon.png') : path.join(__dirname, 'icon.png')
 
 protocol.registerSchemesAsPrivileged([{ scheme: 'app', privileges: { secure: true, standard: true } }])
 
 function createMenu() {
   Menu.setApplicationMenu(null)
+}
+//设置托管图标
+function createTray() {
+  tray = new Tray(iconUrl)
+  tray.setToolTip('常用短语')
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: '显示',
+      click: () => {
+        win.show()
+      }
+    },
+    {
+      label: '置顶',
+      click: () => {
+        win.setAlwaysOnTop(!win.isAlwaysOnTop())
+      }
+    },
+    {
+      label: '退出',
+      click: () => {
+        win = null
+        app.exit()
+      }
+    }
+  ])
+  // 载入托盘菜单
+  tray.setContextMenu(contextMenu)
+  // 双击触发
+  tray.on('double-click', () => {
+    // 双击通知区图标实现应用的显示或隐藏
+    win.isVisible() ? win.hide() : win.show()
+    win.isVisible() ? win.setSkipTaskbar(false) : win.setSkipTaskbar(true)
+  })
 }
 
 async function createWindow() {
@@ -24,7 +59,7 @@ async function createWindow() {
     minHeight: 100,
     frame: false,
     alwaysOnTop: true,
-    icon: path.join(__dirname, '/public/icon.png'),
+    icon: iconUrl,
     webPreferences: {
       devTools: true,
       nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
@@ -60,33 +95,10 @@ app.on('ready', async () => {
   }
   createWindow()
   createMenu()
+  createTray()
   //监听窗口大小的变化
   win.on('resized', () => {
     win.webContents.send('sizeChange', win.getSize())
-  })
-  tray = new Tray(path.join(__dirname, '/public/icon.png'))
-  tray.setToolTip('常用短语')
-  const contextMenu = Menu.buildFromTemplate([
-    {
-      label: '显示',
-      click: () => {
-        win.show()
-      }
-    },
-    {
-      label: '退出',
-      click: () => {
-        win.destroy()
-      }
-    }
-  ])
-  // 载入托盘菜单
-  tray.setContextMenu(contextMenu)
-  // 双击触发
-  tray.on('double-click', () => {
-    // 双击通知区图标实现应用的显示或隐藏
-    win.isVisible() ? win.hide() : win.show()
-    win.isVisible() ? win.setSkipTaskbar(false) : win.setSkipTaskbar(true)
   })
 })
 
@@ -104,7 +116,6 @@ if (isDevelopment) {
   }
 }
 
-ipcMain.on('window-top', windowTop)
 ipcMain.on('change-window-size', changeWindowSize)
 ipcMain.on('close', () => {
   win = null
@@ -112,6 +123,5 @@ ipcMain.on('close', () => {
 })
 ipcMain.on('hideWindow', () => {
   let currentWindow = BrowserWindow.getFocusedWindow()
-  // currentWindow.minimize()
   currentWindow.hide()
 })
