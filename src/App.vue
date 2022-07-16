@@ -29,15 +29,14 @@ export default {
   color: #2c3e50;
   position: relative;
 }
-&::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+::-webkit-scrollbar {
+  width: 10px;
 }
-&::-webkit-scrollbar-thumb {
-  border-radius: 4px;
-  background-color: #d4a066;
+::-webkit-scrollbar-track {
+  border-radius: 8px;
 }
-&::-webkit-scrollbar-track {
-  background: #f3f3f3;
+::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.1);
 }
 </style>
