@@ -49,6 +49,10 @@ function createTray() {
     win.isVisible() ? win.hide() : win.show()
     win.isVisible() ? win.setSkipTaskbar(false) : win.setSkipTaskbar(true)
   })
+  tray.on('click', () => {
+    if (!win.isVisible()) win.show()
+    if (win.isMinimized()) win.restore()
+  })
 }
 
 async function createWindow() {
@@ -123,5 +127,5 @@ ipcMain.on('close', () => {
 })
 ipcMain.on('hideWindow', () => {
   let currentWindow = BrowserWindow.getFocusedWindow()
-  currentWindow.hide()
+  currentWindow.minimize()
 })
