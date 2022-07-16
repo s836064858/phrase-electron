@@ -5,14 +5,14 @@
         <div class="icon-button">
           <div class="icon-button-image close" @click="closeWindow"></div>
         </div>
-        <!-- <div class="icon-button" style="background: #f3c948" @click="alwaysTop">
+        <div class="icon-button" style="background: #f3c948" @click="alwaysTop">
           <div class="icon-button-image top"></div>
-        </div> -->
+        </div>
         <div class="icon-button" style="background: #6cd052" v-if="!isSmallSize">
-          <div class="icon-button-image minimize" @click="minimize('min')"></div>
+          <div class="icon-button-image small-size" @click="minimize('min')"></div>
         </div>
         <div class="icon-button" style="background: #6cd052" v-else>
-          <div class="icon-button-image maximize" @click="minimize('max')"></div>
+          <div class="icon-button-image big-size" @click="minimize('max')"></div>
         </div>
       </div>
       <div class="title">{{ title }}</div>
@@ -20,9 +20,10 @@
     <div class="windows-header" v-if="isWindows">
       <div class="title">{{ title }}</div>
       <div class="icon-buttons">
-        <div class="icon-button minimize" v-if="!isSmallSize" @click="minimize('min')"></div>
-        <div class="icon-button maximize" v-else @click="minimize('max')"></div>
-        <!-- <div class="icon-button top" @click="alwaysTop"></div> -->
+        <div class="icon-button minimize" @click="hideWindow"></div>
+        <div class="icon-button small-size" v-if="!isSmallSize" @click="minimize('min')"></div>
+        <div class="icon-button big-size" v-else @click="minimize('max')"></div>
+        <div class="icon-button top" @click="alwaysTop"></div>
         <div class="icon-button close" @click="closeWindow" style="background-size: 20px 20px"></div>
       </div>
     </div>
@@ -74,8 +75,8 @@ export default {
     minimize(type) {
       this.isSmallSize = type === 'min'
       ipcRenderer.send('change-window-size', {
-        width: type === 'min' ? 500 : 800,
-        height: type === 'min' ? 250 : 600
+        width: type === 'min' ? 250 : 800,
+        height: type === 'min' ? 300 : 600
       })
     },
     /**
@@ -84,6 +85,9 @@ export default {
      */
     closeWindow() {
       ipcRenderer.send('close')
+    },
+    hideWindow() {
+      ipcRenderer.send('hideWindow')
     }
   }
 }
@@ -111,6 +115,10 @@ export default {
     display: inline-block;
     line-height: 30px;
     font-size: 14px;
+    width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .icon-buttons {
     display: flex;
@@ -148,6 +156,10 @@ export default {
   .title {
     line-height: 30px;
     font-size: 14px;
+    width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .icon-buttons {
     display: flex;
@@ -175,9 +187,12 @@ export default {
   background-image: url('../assets/zhiding.png');
 }
 .minimize {
+  background-image: url('../assets/minimize.png');
+}
+.small-size {
   background-image: url('../assets/zuixiaohua.png');
 }
-.maximize {
+.big-size {
   background-image: url('../assets/zuidahua.png');
 }
 </style>

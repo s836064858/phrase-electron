@@ -357,4 +357,8 @@ export default {
 ::v-deep .el-table .el-table__cell {
   padding: 2px 0;
 }
+::v-deep .el-table .cell {
+  padding-left: 5px;
+  padding-right: 5px;
+}
 </style>
