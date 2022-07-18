@@ -5,6 +5,9 @@
         <div class="icon-button">
           <div class="icon-button-image close" @click="closeWindow"></div>
         </div>
+        <div class="icon-button" style="background: #fcbd2e">
+          <div class="icon-button-image minimize" @click="hideWindow"></div>
+        </div>
         <div class="icon-button" style="background: #6cd052" v-if="!isSmallSize">
           <div class="icon-button-image small-size" @click="minimize('min')"></div>
         </div>
