@@ -8,8 +8,9 @@ const path = require('path')
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
 let win, tray
+let winURL = process.env.WEBPACK_DEV_SERVER_URL ? process.env.WEBPACK_DEV_SERVER_URL : 'app://./index.html'
 //获取icon地址
-const iconUrl = isDevelopment ? path.join(__dirname, '/bundled/icon.png') : path.join(__dirname, 'icon.png')
+const iconUrl = isDevelopment ? path.join(__dirname, '../public/icon_32x32.png') : path.join(__dirname, 'icon_32*32.png')
 
 protocol.registerSchemesAsPrivileged([{ scheme: 'app', privileges: { secure: true, standard: true } }])
 
@@ -72,11 +73,11 @@ async function createWindow() {
   })
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
-    await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
+    await win.loadURL(winURL)
     if (!process.env.IS_TEST) win.webContents.openDevTools()
   } else {
     createProtocol('app')
-    win.loadURL('app://./index.html')
+    win.loadURL(winURL)
   }
 }
 
@@ -119,12 +120,14 @@ if (isDevelopment) {
     })
   }
 }
-
+// 更改窗口大小
 ipcMain.on('change-window-size', changeWindowSize)
+// 关闭窗口
 ipcMain.on('close', () => {
   win = null
   app.exit()
 })
+// 隐藏窗口
 ipcMain.on('hideWindow', () => {
   let currentWindow = BrowserWindow.getFocusedWindow()
   currentWindow.minimize()
