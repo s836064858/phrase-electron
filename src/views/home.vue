@@ -47,38 +47,6 @@
         </template>
       </el-table-column>
     </el-table>
-    <!-- 添加类型 -->
-    <el-dialog title="提示" :visible.sync="dialogForm.visible" width="50%">
-      <el-form ref="form" :model="dialogForm" label-width="80px" :rules="rules">
-        <el-form-item label="关键词" prop="keyWord">
-          <el-input type="text" v-model="dialogForm.keyWord"></el-input>
-        </el-form-item>
-        <el-form-item label="内容" prop="content">
-          <el-input type="textarea" v-model="dialogForm.content"></el-input>
-        </el-form-item>
-        <el-form-item label="所属类型" prop="typeId">
-          <el-select v-model="dialogForm.typeId">
-            <el-option v-for="item in typeList" :key="item.id" :label="item.content" :value="item.id"> </el-option>
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogForm.visible = false">取 消</el-button>
-        <el-button type="primary" @click="submitPhrase">确 定</el-button>
-      </span>
-    </el-dialog>
-    <!-- 添加短语类型 -->
-    <el-dialog title="提示" :visible.sync="typeForm.visible">
-      <el-form ref="typeForm" :model="typeForm" label-width="80px" :rules="rules">
-        <el-form-item label="类型" prop="type">
-          <el-input type="text" v-model="typeForm.type"></el-input>
-        </el-form-item>
-      </el-form>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="typeForm.visible = false">取 消</el-button>
-        <el-button type="primary" @click="submitType">确 定</el-button>
-      </span>
-    </el-dialog>
   </div>
 </template>
 
@@ -94,38 +62,27 @@ export default {
       typeOption: [],
       tableData: [],
       typeList: [],
-      rules: {
-        keyWord: [{ required: true, message: '请输入关键词', trigger: 'blur' }],
-        content: [{ required: true, message: '请输入内容', trigger: 'blur' }],
-        typeId: [{ required: true, message: '请选择所属tab', trigger: 'change' }],
-        type: [{ required: true, message: '请输入类型', trigger: 'blur' }]
-      },
-      dialogForm: {
-        visible: false,
-        id: null,
-        keyWord: null,
-        content: null,
-        typeId: null
-      },
-      typeForm: {
-        visible: false,
-        id: null,
-        type: null
-      },
       isSmallSize: false
     }
   },
   async mounted() {
-    //监听窗口变化
-    ipcRenderer.on('sizeChange', (e, size) => {
-      if ((size[0] <= 800 && size[1] <= 600) || size[0] <= 600) this.isSmallSize = true
-      else this.isSmallSize = false
-    })
+    this.addIpcListener()
     await this.getTypeList()
     this.queryData.type = this.typeList[0].id
     await this.getTableData()
   },
   methods: {
+    addIpcListener() {
+      //监听窗口变化
+      ipcRenderer.on('sizeChange', (e, size) => {
+        if ((size[0] <= 800 && size[1] <= 600) || size[0] <= 600) this.isSmallSize = true
+        else this.isSmallSize = false
+      })
+      ipcRenderer.on('update-table', () => {
+        this.getTableData()
+        this.getTypeList()
+      })
+    },
     /**
      * @description: 获取类型
      * @return {*}
@@ -158,15 +115,9 @@ export default {
      * @return {*}
      */
     addKeyWord(row = null) {
-      ipcRenderer.send('change-window-size', {
-        width: 800,
-        height: 600
-      })
-      this.dialogForm.visible = true
-      this.dialogForm.id = row?.id
-      this.dialogForm.keyWord = row?.keyWord
-      this.dialogForm.content = row?.content
-      this.dialogForm.typeId = row?.id ? row?.typeId : this.queryData.type
+      let url = `/editPhrase?typeId=${this.queryData.type}`
+      if (row?.id) url += `&id=${row.id}`
+      ipcRenderer.send('openDialogWin', { routePath: url, height: 300 })
     },
     /**
      * @description: 删除关键词
@@ -227,64 +178,15 @@ export default {
       })
     },
     /**
-     * @description: 提交关键词
-     * @return {*}
-     */
-    async submitPhrase() {
-      this.$refs.form.validate(async (valid) => {
-        if (!valid) return
-        const postData = {
-          id: this.dialogForm.id,
-          keyWord: this.dialogForm.keyWord,
-          content: this.dialogForm.content,
-          typeId: this.dialogForm.typeId
-        }
-        await this.$axios({
-          url: 'front/phrase/updatePhrase',
-          method: 'post',
-          data: postData
-        })
-        this.$message({
-          type: 'success',
-          message: `${postData.id ? '编辑' : '创建'}成功!`
-        })
-        this.dialogForm.visible = false
-        this.getTableData()
-      })
-    },
-    /**
      * @description: 弹出添加类型弹出框
      * @param {*} row
      * @return {*}
      */
     addType(row = null) {
-      this.typeForm.visible = true
-      this.typeForm.id = row?.id
-      this.typeForm.type = row?.content
-    },
-    /**
-     * @description: 提交添加类型
-     * @return {*}
-     */
-    async submitType() {
-      this.$refs.typeForm.validate(async (valid) => {
-        if (!valid) return
-        const postData = {
-          id: this.typeForm.id,
-          content: this.typeForm.type
-        }
-        await this.$axios({
-          url: 'front/phrase/updatePhraseType',
-          method: 'post',
-          data: postData
-        })
-        this.$message({
-          type: 'success',
-          message: `${postData.id ? '编辑' : '创建'}成功!`
-        })
-        this.typeForm.visible = false
-        this.getTypeList()
-      })
+      let url = `/editPhraseType`
+      if (row?.id) url += `?id=${row.id}&content=${row?.content}`
+      console.log(url)
+      ipcRenderer.send('openDialogWin', { routePath: url, height: 200 })
     }
   }
 }

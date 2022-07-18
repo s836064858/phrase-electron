@@ -1,21 +1,31 @@
 <template>
   <div id="app">
-    <Header></Header>
-    <div style="padding: 5px; margin-top: 35px">
+    <template v-if="noHeader">
       <router-view></router-view>
-    </div>
+    </template>
+    <template v-else>
+      <Header></Header>
+      <div style="padding: 5px; margin-top: 35px">
+        <router-view></router-view>
+      </div>
+    </template>
   </div>
 </template>
 <script>
 import Header from './components/header'
 export default {
   data() {
-    return {}
+    return {
+      noHeader: false
+    }
   },
   components: {
     Header
   },
-  methods: {}
+  methods: {},
+  mounted() {
+    if (this.$route.meta?.noHeader) this.noHeader = true
+  }
 }
 </script>
 <style>
@@ -28,6 +38,8 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
   position: relative;
+  height: 100%;
+  width: 100%;
 }
 ::-webkit-scrollbar {
   width: 10px;

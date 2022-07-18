@@ -1,13 +1,13 @@
 'use strict'
 
-import { app, protocol, BrowserWindow, Menu, ipcMain, Tray } from 'electron'
+import { app, protocol, BrowserWindow, Menu, ipcMain, Tray, globalShortcut } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 import { changeWindowSize } from './main/changeWindowSize'
 const path = require('path')
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
-let win, tray
+let win, tray, dialogWin
 let winURL = process.env.WEBPACK_DEV_SERVER_URL ? process.env.WEBPACK_DEV_SERVER_URL : 'app://./index.html'
 //获取icon地址
 const iconUrl = isDevelopment ? path.join(__dirname, '../public/icon_32x32.png') : path.join(__dirname, 'icon_32*32.png')
@@ -71,7 +71,6 @@ async function createWindow() {
       contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION
     }
   })
-
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     await win.loadURL(winURL)
     if (!process.env.IS_TEST) win.webContents.openDevTools()
@@ -105,6 +104,11 @@ app.on('ready', async () => {
   win.on('resized', () => {
     win.webContents.send('sizeChange', win.getSize())
   })
+  // 添加f12打开控制台
+  globalShortcut.register('F12', () => {
+    if (win) win.webContents.openDevTools()
+    if (dialogWin) dialogWin.webContents.openDevTools()
+  })
 })
 
 if (isDevelopment) {
@@ -132,3 +136,51 @@ ipcMain.on('hideWindow', () => {
   let currentWindow = BrowserWindow.getFocusedWindow()
   currentWindow.minimize()
 })
+
+/**
+ * @description: 打开弹窗窗口
+ * @param {*} routePath
+ * @return {*}
+ */
+function openDialogWin({ routePath, width = 400, height = 550 }) {
+  dialogWin = new BrowserWindow({
+    width,
+    height,
+    parent: win, // win是主窗口
+    modal: true,
+    frame: false,
+    webPreferences: {
+      nodeIntegration: true,
+      nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
+      contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION
+    }
+  })
+  dialogWin.loadURL(winURL + '#' + routePath)
+  if (isDevelopment) dialogWin.webContents.openDevTools()
+  dialogWin.on('closed', () => {
+    dialogWin.destroy()
+    dialogWin = null
+  })
+}
+
+// 打开弹窗窗口
+ipcMain.on('openDialogWin', (event, params) => {
+  openDialogWin(params)
+})
+
+// 关闭弹窗窗口
+ipcMain.on('dialog-close', () => {
+  dialogWin.destroy()
+  dialogWin = null
+})
+
+//提示更新表格
+ipcMain.on('update-table', () => {
+  win.webContents.send('update-table')
+})
+
+// 禁止多开
+const gotTheLock = app.requestSingleInstanceLock()
+if (!gotTheLock) {
+  app.quit()
+}
